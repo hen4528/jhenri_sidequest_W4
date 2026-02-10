@@ -50,6 +50,15 @@ class WorldLevel {
 
     // Convert raw platform objects into Platform instances.
     this.platforms = (levelJson.platforms || []).map((p) => new Platform(p));
+
+    // Randomly choose one non-ground, non-final platform to host spikes.
+    // We set a boolean `hasSpike` on the chosen Platform instance so
+    // drawing and collision can reference it later.
+    if (this.platforms.length > 2) {
+      // Choose an index between 1 and length-2 (exclude first and last)
+      const idx = floor(random(1, this.platforms.length - 1));
+      this.platforms[idx].hasSpike = true;
+    }
   }
 
   /*
@@ -74,6 +83,10 @@ class WorldLevel {
     background(color(this.theme.bg));
     for (const p of this.platforms) {
       p.draw(color(this.theme.platform));
+      // If this platform was chosen to have spikes, draw them on top.
+      if (p.hasSpike && typeof spikes === "function") {
+        spikes(p);
+      }
     }
   }
 }

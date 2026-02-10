@@ -47,6 +47,31 @@ function draw() {
   player.update(world.platforms);
   player.draw(world.theme.blob);
 
+  // Check spike collisions and respawn if hit
+  // Build player AABB once for reuse
+  const playerBox = {
+    x: player.x - player.r,
+    y: player.y - player.r,
+    w: player.r * 2,
+    h: player.r * 2,
+  };
+
+  for (const p of world.platforms) {
+    if (p.hasSpike) {
+      const spikeWidth = 20;
+      const spikeHeight = 20;
+      const spikeX = p.x + p.w / 2 - spikeWidth / 2;
+      const spikeY = p.y - spikeHeight;
+      const spikeBox = { x: spikeX, y: spikeY, w: spikeWidth, h: spikeHeight };
+
+      if (overlapAABB(playerBox, spikeBox)) {
+        // Respawn player at level start
+        player.spawnFromLevel(world);
+        break;
+      }
+    }
+  }
+
   // 3) Draw the door
   const lastPlatform = world.platforms[world.platforms.length - 1];
   drawDoor(lastPlatform);
@@ -88,6 +113,23 @@ function drawDoor(platform) {
   let knobX = doorX + doorWidth - 10;
   let knobY = doorY + doorHeight / 2;
   ellipse(knobX, knobY, 10, 10);
+}
+
+function spikes(platform) {
+  let spikeWidth = 8;
+  let spikeHeight = 8;
+  let spikeX = platform.x + platform.w / 2 - spikeWidth / 2;
+  let spikeY = platform.y - spikeHeight;
+
+  fill("red");
+  triangle(
+    spikeX,
+    spikeY + spikeHeight,
+    spikeX + spikeWidth / 2,
+    spikeY,
+    spikeX + spikeWidth,
+    spikeY + spikeHeight,
+  );
 }
 
 /*
